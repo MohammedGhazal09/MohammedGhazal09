@@ -1,16 +1,28 @@
-## Hi there 👋
+# Hello there 
 
-<!--
-**MohammedGhazal09/MohammedGhazal09** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+I'm **Mohammad Hamza Ghazal**, a **Full Stack MERN Developer** who enjoys building scalable web applications and delivering clean, efficient code.
 
-Here are some ideas to get you started:
+##  About Me
+I’m a dedicated **MERN Stack Developer** focused on building efficient, scalable, and user-friendly web applications.  
+I enjoy turning complex problems into simple, elegant solutions and writing clean, maintainable code.  
+I’m constantly learning and improving, with a passion for performance, design patterns, and best practices in modern web development.
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+##  Technical Skills
+- **Frontend:** React.js, Next.js, TypeScript, HTML5, CSS, JavaScript (ES6+), Tailwind CSS  
+- **Backend:** Node.js, Express.js, REST APIs, JWT Authentication  
+- **Database:** MongoDB, Mongoose  
+- **Tools:** Git, GitHub, VS Code, Postman, npm, Vercel
+
+##  Soft Skills
+- Strong problem-solving and analytical thinking  
+- Good communication and teamwork abilities  
+- Adaptability and willingness to learn  
+- Time management and organization  
+
+##  Contact
+- **Email:** mohammedghazal01@outlook.com
+- **LinkedIn:** www.linkedin.com/in/mohammed-ghazal-784153231
+
+---
+
+⭐ _“Code is like humor. When you have to explain it, it’s bad.” – Cory House_
