@@ -1,9 +1,9 @@
 # Hello there 
 
-I'm **Mohammad Hamza Ghazal**, a **Full Stack Developer** who enjoys building scalable web applications and delivering clean, efficient code.
+I'm **Mohammad Hamza Ghazal**, a **Full Stack Engineer** who enjoys building scalable web applications and delivering clean, efficient code.
 
 ##  About Me
-I’m a dedicated **Full Stack Developer** focused on building efficient, scalable, and user-friendly web applications.  
+I’m a dedicated **Full Stack Engineer** focused on building efficient, scalable, and user-friendly web applications.  
 I enjoy turning complex problems into simple, elegant solutions and writing clean, maintainable code.  
 I’m constantly learning and improving, with a passion for performance, design patterns, and best practices in modern web development.
 
