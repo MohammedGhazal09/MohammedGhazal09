@@ -1,0 +1,77 @@
+name: DOMHamster external WP00 RED verification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/domhamster-target-verify.yml
+      - domhamster-target-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  target-red:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Set up Node.js 24.19.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.19.0
+
+      - name: Clone the public DOMHamster WP00 branch
+        run: |
+          git clone --depth 1 --branch implementation/wp00-toolchain \
+            https://github.com/MohammedGhazal09/DOMHamster.git domhamster-target
+          git -C domhamster-target rev-parse HEAD | tee domhamster-target/source-sha.txt
+
+      - name: Verify runtime
+        run: |
+          test "$(node --version)" = "v24.19.0"
+          test "$(npm --version)" = "11.17.0"
+
+      - name: Verify dependency policy
+        working-directory: domhamster-target
+        run: node scripts/verify-exact-dependencies.mjs
+
+      - name: Generate and install the exact dependency graph
+        working-directory: domhamster-target
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          npm ci --ignore-scripts
+
+      - name: Audit dependency graph
+        working-directory: domhamster-target
+        run: npm audit --audit-level=high --json > npm-audit.json
+
+      - name: Verify static toolchain contracts
+        working-directory: domhamster-target
+        run: node --test tests/toolchain/wp00-contract.test.mjs
+
+      - name: Observe required RED component test
+        working-directory: domhamster-target
+        shell: bash
+        run: |
+          set +e
+          npm run test:run -- src/app/App.test.tsx > wp00-red-test.log 2>&1
+          test_status=$?
+          set -e
+          cat wp00-red-test.log
+          test "$test_status" -ne 0
+          grep -Eqi '(cannot find module|failed to resolve import|could not resolve).*(\./App|src/app/App)' wp00-red-test.log
+          echo 'DOMHAMSTER_EXPECTED_RED_CONFIRMED'
+
+      - name: Upload target RED evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: domhamster-target-wp00-red
+          path: |
+            domhamster-target/source-sha.txt
+            domhamster-target/package.json
+            domhamster-target/package-lock.json
+            domhamster-target/npm-audit.json
+            domhamster-target/wp00-red-test.log
+          if-no-files-found: error
+          retention-days: 7
