@@ -1,4 +1,4 @@
-name: DOMHamster target WP00 RED verification
+name: DOMHamster target WP00 GREEN verification
 
 on:
   push:
@@ -11,9 +11,9 @@ permissions:
   contents: read
 
 jobs:
-  target-red:
+  target-green:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Check out verification harness
         uses: actions/checkout@v7
@@ -28,21 +28,20 @@ jobs:
           git clone --depth 1 --branch implementation/wp00-toolchain \
             https://github.com/MohammedGhazal09/DOMHamster.git domhamster-target
           git -C domhamster-target rev-parse HEAD | tee domhamster-target/source-sha.txt
+          test "$(cat domhamster-target/source-sha.txt)" = "c4bcf3613a46921e307986fdcdeaa146e22096f9"
 
       - name: Verify runtime
         run: |
           test "$(node --version)" = "v24.19.0"
           test "$(npm --version)" = "11.17.0"
 
+      - name: Install committed dependency graph
+        working-directory: domhamster-target
+        run: npm ci --ignore-scripts
+
       - name: Verify dependency policy
         working-directory: domhamster-target
         run: node scripts/verify-exact-dependencies.mjs
-
-      - name: Generate and install the exact dependency graph
-        working-directory: domhamster-target
-        run: |
-          npm install --package-lock-only --ignore-scripts
-          npm ci --ignore-scripts
 
       - name: Audit dependency graph
         working-directory: domhamster-target
@@ -52,28 +51,46 @@ jobs:
         working-directory: domhamster-target
         run: node --test tests/toolchain/wp00-contract.test.mjs
 
-      - name: Observe required RED component test
+      - name: Verify formatting
         working-directory: domhamster-target
-        shell: bash
-        run: |
-          set +e
-          npm run test:run -- src/app/App.test.tsx > wp00-red-test.log 2>&1
-          test_status=$?
-          set -e
-          cat wp00-red-test.log
-          test "$test_status" -ne 0
-          grep -Eqi '(cannot find module|failed to resolve import|could not resolve).*(\./App|src/app/App)' wp00-red-test.log
-          echo 'DOMHAMSTER_EXPECTED_RED_CONFIRMED'
+        run: npm run format:check
 
-      - name: Upload target RED evidence
+      - name: Verify lint
+        working-directory: domhamster-target
+        run: npm run lint
+
+      - name: Verify types
+        working-directory: domhamster-target
+        run: npm run typecheck
+
+      - name: Verify complete Vitest suite
+        working-directory: domhamster-target
+        run: npm run test:run
+
+      - name: Verify production build
+        working-directory: domhamster-target
+        run: npm run build
+
+      - name: Install Chromium
+        working-directory: domhamster-target
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify browser smoke test
+        working-directory: domhamster-target
+        run: npm run test:e2e
+
+      - name: Upload target GREEN evidence
+        if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: domhamster-target-wp00-red
+          name: domhamster-target-wp00-green
           path: |
             domhamster-target/source-sha.txt
             domhamster-target/package.json
             domhamster-target/package-lock.json
             domhamster-target/npm-audit.json
-            domhamster-target/wp00-red-test.log
-          if-no-files-found: error
+            domhamster-target/dist/
+            domhamster-target/playwright-report/
+            domhamster-target/test-results/
+          if-no-files-found: warn
           retention-days: 7
