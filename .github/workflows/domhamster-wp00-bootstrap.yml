@@ -1,13 +1,46 @@
-name: DOMHamster staging
+name: DOMHamster WP01 fixture count GREEN
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - domhamster-wp00-bootstrap-20260826
+    paths:
+      - domhamster-bootstrap/**
+      - .github/workflows/domhamster-wp00-bootstrap.yml
 
 permissions:
   contents: read
 
 jobs:
-  staging:
+  fixture-count-green:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: domhamster-bootstrap
     steps:
-      - run: echo "DOMHamster staging branch"
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.19.0
+      - name: Verify runtime
+        run: |
+          test "$(node --version)" = "v24.19.0"
+          test "$(npm --version)" = "11.17.0"
+      - name: Install verified dependencies
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          npm ci --ignore-scripts
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:run -- tests/domain/seed.test.ts
+      - run: npm run build
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: domhamster-wp01-count-green-failure
+          path: |
+            domhamster-bootstrap/test-results/
+            domhamster-bootstrap/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
