@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  lockfile:
+  red-contract:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,15 +37,26 @@ jobs:
           npm ls --all --json > npm-ls.json
       - name: Audit dependency graph
         run: npm audit --audit-level=high --json > npm-audit.json
+      - name: Observe expected RED application contract
+        run: |
+          set +e
+          npm run test:run > vitest-red.log 2>&1
+          status=$?
+          set -e
+          cat vitest-red.log
+          test "$status" -ne 0
+          grep -F "src/app/App.test.tsx" vitest-red.log
+          grep -F "./App" vitest-red.log
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: domhamster-wp00-lockfile
+          name: domhamster-wp00-red
           path: |
             domhamster-bootstrap/package-lock.json
             domhamster-bootstrap/node-version.txt
             domhamster-bootstrap/npm-version.txt
             domhamster-bootstrap/npm-ls.json
             domhamster-bootstrap/npm-audit.json
+            domhamster-bootstrap/vitest-red.log
           if-no-files-found: warn
           retention-days: 7
