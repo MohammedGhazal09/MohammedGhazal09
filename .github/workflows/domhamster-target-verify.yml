@@ -8,6 +8,7 @@ on:
       - domhamster-target-trigger.txt
   issues:
     types: [opened]
+  create:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
@@ -17,7 +18,9 @@ permissions:
 
 jobs:
   target-green:
-    if: github.event_name != 'issues' || startsWith(github.event.issue.title, '[DOMHamster WP00 GREEN]')
+    if: >-
+      (github.event_name != 'issues' || startsWith(github.event.issue.title, '[DOMHamster WP00 GREEN]')) &&
+      (github.event_name != 'create' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'domhamster-green-trigger-')))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
