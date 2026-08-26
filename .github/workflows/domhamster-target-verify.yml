@@ -34,7 +34,7 @@ jobs:
           git clone --depth 1 --branch implementation/wp00-toolchain \
             https://github.com/MohammedGhazal09/DOMHamster.git domhamster-target
           git -C domhamster-target rev-parse HEAD | tee domhamster-target/source-sha.txt
-          test "$(cat domhamster-target/source-sha.txt)" = "c4bcf3613a46921e307986fdcdeaa146e22096f9"
+          test "$(cat domhamster-target/source-sha.txt)" = "2840dc74c8e545488f43909407a1fb3a19cbd42e"
 
       - name: Verify runtime
         run: |
