@@ -1,62 +1,13 @@
 name: DOMHamster WP00 bootstrap
 
 on:
-  push:
-    branches:
-      - domhamster-wp00-bootstrap-20260826
-    paths:
-      - domhamster-bootstrap/**
-      - .github/workflows/domhamster-wp00-bootstrap.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  red-contract:
+  staging:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: domhamster-bootstrap
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.19.0
-      - name: Verify runtime
-        run: |
-          node --version | tee node-version.txt
-          npm --version | tee npm-version.txt
-          test "$(node --version)" = "v24.19.0"
-          test "$(npm --version)" = "11.17.0"
-      - name: Generate exact lockfile
-        run: npm install --package-lock-only --ignore-scripts
-      - name: Verify manifest and clean install
-        run: |
-          node scripts/verify-exact-dependencies.mjs
-          npm ci --ignore-scripts
-          npm ls --all --json > npm-ls.json
-      - name: Audit dependency graph
-        run: npm audit --audit-level=high --json > npm-audit.json
-      - name: Observe expected RED application contract
-        run: |
-          set +e
-          npm run test:run > vitest-red.log 2>&1
-          status=$?
-          set -e
-          cat vitest-red.log
-          test "$status" -ne 0
-          grep -F "src/app/App.test.tsx" vitest-red.log
-          grep -F "./App" vitest-red.log
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: domhamster-wp00-red
-          path: |
-            domhamster-bootstrap/package-lock.json
-            domhamster-bootstrap/node-version.txt
-            domhamster-bootstrap/npm-version.txt
-            domhamster-bootstrap/npm-ls.json
-            domhamster-bootstrap/npm-audit.json
-            domhamster-bootstrap/vitest-red.log
-          if-no-files-found: warn
-          retention-days: 7
+      - run: echo "DOMHamster WP00 staging branch"
