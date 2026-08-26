@@ -26,10 +26,8 @@ jobs:
         run: |
           test "$(node --version)" = "v24.19.0"
           test "$(npm --version)" = "11.17.0"
-      - name: Install verified dependencies
-        run: |
-          npm install --package-lock-only --ignore-scripts
-          npm ci --ignore-scripts
+      - name: Install exact dependencies for scratch verification
+        run: npm install --ignore-scripts
       - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
