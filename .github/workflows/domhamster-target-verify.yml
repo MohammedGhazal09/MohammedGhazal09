@@ -6,6 +6,8 @@ on:
     paths:
       - .github/workflows/domhamster-target-verify.yml
       - domhamster-target-trigger.txt
+  issues:
+    types: [opened]
   workflow_dispatch:
 
 permissions:
@@ -13,6 +15,7 @@ permissions:
 
 jobs:
   target-green:
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, '[DOMHamster WP00 GREEN]')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
