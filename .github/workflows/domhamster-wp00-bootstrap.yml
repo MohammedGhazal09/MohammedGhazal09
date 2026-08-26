@@ -1,13 +1,68 @@
 name: DOMHamster WP00 bootstrap
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - domhamster-wp00-bootstrap-20260826
+    paths:
+      - domhamster-bootstrap/**
+      - .github/workflows/domhamster-wp00-bootstrap.yml
 
 permissions:
   contents: read
 
 jobs:
-  staging:
+  green-contract:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: domhamster-bootstrap
     steps:
-      - run: echo "DOMHamster WP00 staging branch"
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.19.0
+      - name: Verify runtime
+        run: |
+          node --version | tee node-version.txt
+          npm --version | tee npm-version.txt
+          test "$(node --version)" = "v24.19.0"
+          test "$(npm --version)" = "11.17.0"
+      - name: Generate exact lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Install and verify dependency graph
+        run: |
+          node scripts/verify-exact-dependencies.mjs
+          npm ci --ignore-scripts
+          npm ls --all --json > npm-ls.json
+      - name: Audit dependency graph
+        run: npm audit --audit-level=high --json > npm-audit.json
+      - name: Verify formatting
+        run: npm run format:check
+      - name: Verify lint
+        run: npm run lint
+      - name: Verify types
+        run: npm run typecheck
+      - name: Verify component GREEN
+        run: npm run test:run -- src/app/App.test.tsx
+      - name: Verify production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify browser smoke test
+        run: npm run test:e2e -- tests/e2e/smoke.spec.ts
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: domhamster-wp00-green
+          path: |
+            domhamster-bootstrap/package-lock.json
+            domhamster-bootstrap/node-version.txt
+            domhamster-bootstrap/npm-version.txt
+            domhamster-bootstrap/npm-ls.json
+            domhamster-bootstrap/npm-audit.json
+            domhamster-bootstrap/dist/
+            domhamster-bootstrap/playwright-report/
+            domhamster-bootstrap/test-results/
+          if-no-files-found: warn
+          retention-days: 7
