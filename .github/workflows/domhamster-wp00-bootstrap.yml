@@ -43,8 +43,8 @@ jobs:
         run: npm run lint
       - name: Verify types
         run: npm run typecheck
-      - name: Verify component GREEN
-        run: npm run test:run -- src/app/App.test.tsx
+      - name: Verify Vitest suite
+        run: npm run test:run
       - name: Verify production build
         run: npm run build
       - name: Install Chromium
