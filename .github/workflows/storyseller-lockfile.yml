@@ -10,7 +10,7 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: storyseller-lockfile
@@ -19,15 +19,30 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.18.0
-      - name: Generate deterministic lockfile
-        run: npm install --package-lock-only --lockfile-version=1 --ignore-scripts --no-audit --no-fund
-      - name: Verify patched framework versions
+      - name: Generate compact deterministic lockfile
+        run: |
+          npm install --package-lock-only --lockfile-version=1 --ignore-scripts --no-audit --no-fund
+          node <<'NODE'
+          const fs = require('node:fs');
+          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+          const visit = (value) => {
+            if (!value || typeof value !== 'object') return;
+            if (!Array.isArray(value)) delete value.resolved;
+            for (const child of Object.values(value)) visit(child);
+          };
+          visit(lock);
+          fs.writeFileSync('package-lock.json', `${JSON.stringify(lock)}\n`);
+          NODE
+      - name: Verify patched framework versions and clean install
         run: |
           node -e "const lock=require('./package-lock.json'); if (lock.dependencies.next.version !== '16.2.11') process.exit(1)"
           node -e "const lock=require('./package-lock.json'); if (lock.dependencies['eslint-config-next'].version !== '16.2.11') process.exit(1)"
-      - name: Upload lockfile
+          rm -rf node_modules
+          npm ci --ignore-scripts --no-audit --no-fund
+          node -e "if (require('./node_modules/next/package.json').version !== '16.2.11') process.exit(1)"
+      - name: Upload verified lockfile
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: storyseller-package-lock-v1
+          name: storyseller-package-lock-verified
           path: storyseller-lockfile/package-lock.json
           retention-days: 1
