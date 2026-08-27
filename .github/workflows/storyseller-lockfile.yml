@@ -20,14 +20,14 @@ jobs:
         with:
           node-version: 24.18.0
       - name: Generate deterministic lockfile
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock-only --lockfile-version=1 --ignore-scripts --no-audit --no-fund
       - name: Verify patched framework versions
         run: |
-          node -e "const lock=require('./package-lock.json'); if (lock.packages['node_modules/next'].version !== '16.2.11') process.exit(1)"
-          node -e "const lock=require('./package-lock.json'); if (lock.packages['node_modules/eslint-config-next'].version !== '16.2.11') process.exit(1)"
+          node -e "const lock=require('./package-lock.json'); if (lock.dependencies.next.version !== '16.2.11') process.exit(1)"
+          node -e "const lock=require('./package-lock.json'); if (lock.dependencies['eslint-config-next'].version !== '16.2.11') process.exit(1)"
       - name: Upload lockfile
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: storyseller-package-lock
+          name: storyseller-package-lock-v1
           path: storyseller-lockfile/package-lock.json
           retention-days: 1
